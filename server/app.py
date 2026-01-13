@@ -19,8 +19,60 @@ db.init_app(app)
 def index():
     return "Index for Game/Review/User API"
 
-# start building your API here
+@app.route('/games')
+def games():
+    # Gets all the games under /games view
 
+    games= []
+    for game in Game.query.all():
+        game_dict = { 
+            'title': game.title,
+            'genre': game.genre,
+            'platform': game.platform,
+            'price': game.price,
+        }
+        games.append(game_dict)
+
+    response =make_response(
+        jsonify(games),
+        200
+    )
+
+    return response
+
+@app.route('/games/<int:id>') # Dynamic Route, Number in the URL becomes the id param
+def game_by_id(id):
+    game = Game.query.filter(Game.id == id ).first()
+
+    game_dict = {
+        "title": game.title,
+        "genre":game.genre, 
+        "platform": game.platform,
+        "price": game.price,
+    }
+
+    response = make_response(
+        game_dict, 
+        200
+    )
+
+    return response
+
+@app.route('/games/users/<int:id>')
+def game_users_by_id(id):
+    game = Game.query.filter(Game== id).first()
+
+    # Use an association proxy
+
+    users = [user.to_dict(rules=('reviews', )) for user in game.users]
+
+    response = make_response(
+        users, 
+        200
+
+    )
+
+    return response
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
